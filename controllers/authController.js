@@ -38,7 +38,7 @@ const register = async (req, res) => {
   await user.save();
 
   // Return response with token and user details
-  res.status(201).json({ user: { id: user._id, name, email, token } });
+  res.status(201).json({ user: { id: user._id, name, email, mobile: user.mobile, token } });
 } catch (error) {
   errorHandler(res, error);
 }
@@ -64,7 +64,7 @@ const login = async (req, res) => {
 
     // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ user: { id: user._id, name: user.name, email, token: user.tokens } });
+    res.json({ user: { id: user._id, name: user.name, email, mobile: user.mobile, token: user.tokens } });
   } catch (error) {
     errorHandler(res, error);
   }
