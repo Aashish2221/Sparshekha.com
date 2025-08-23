@@ -8,5 +8,6 @@ router.post('/login', login);
 router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'Protected route accessed', user: req.user });
 });
-
+router.get('/customer-info', authenticateToken, getCustomerInfo);
+router.put('/customer-info', authenticateToken, updateCustomerInfo);
 module.exports = router;
