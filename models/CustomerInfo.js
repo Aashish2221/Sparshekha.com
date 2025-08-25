@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
+const customerInfoSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
   lastName: { type: String },
   firstName: { type: String },
+  emailId: { type: String },
   mobNo: { type: String },
   phone: { type: String },
   city: { type: String },
@@ -11,8 +12,8 @@ const userSchema = new mongoose.Schema({
   state: { type: String },
   profilePhoto: { type: String },
   address: { type: String },
-  token: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('CustomerInfo', userSchema);
+module.exports = mongoose.model('CustomerInfo', customerInfoSchema);

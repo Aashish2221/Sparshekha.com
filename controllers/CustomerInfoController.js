@@ -1,16 +1,16 @@
-const User = require('../models/CustomerInfo');
+const CustomerInfo = require('../models/CustomerInfo');
 const { errorHandler } = require('../utils/errorHandler');
 
 const getCustomerInfo = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId).select('-password -__v');
+    const customerInfo = await CustomerInfo.findOne({ userId }).select('-__v');
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!customerInfo) {
+      return res.status(404).json({ message: 'Customer info not found' });
     }
 
-    res.json(user);
+    res.json(customerInfo);
   } catch (error) {
     errorHandler(res, error);
   }
@@ -21,17 +21,22 @@ const updateCustomerInfo = async (req, res) => {
     const userId = req.user.userId;
     const updates = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { ...updates, updatedAt: Date.now() },
-      { new: true, runValidators: true, select: '-password -__v' }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    let customerInfo = await CustomerInfo.findOne({ userId });
+    if (!customerInfo) {
+      customerInfo = new CustomerInfo({ userId, ...updates });
+    } else {
+      customerInfo = await CustomerInfo.findOneAndUpdate(
+        { userId },
+        { ...updates, updatedAt: Date.now() },
+        { new: true, runValidators: true, select: '-__v' }
+      );
     }
 
-    res.json(user);
+    if (!customerInfo) {
+      return res.status(500).json({ message: 'Failed to save customer info' });
+    }
+
+    res.json(customerInfo);
   } catch (error) {
     errorHandler(res, error);
   }

@@ -11,4 +11,5 @@ router.get('/protected', authenticateToken, (req, res) => {
 });
 router.get('/customer-info', authenticateToken, getCustomerInfo);
 router.put('/customer-info', authenticateToken, updateCustomerInfo);
+
 module.exports = router;
