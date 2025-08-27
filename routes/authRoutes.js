@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { register, login } = require('../controllers/authController');
 const authenticateToken = require('../middleware/authMiddleware');
-const { getCustomerInfo, updateCustomerInfo } = require('../controllers/CustomerInfoController');
+const { getCustomerInfo, updateCustomerInfo } = require('../controllers/CustomerInfoController'); // Fixed path
 
 router.post('/register', register);
 router.post('/login', login);
