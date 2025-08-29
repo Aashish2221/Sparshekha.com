@@ -7,7 +7,7 @@ const getCustomerInfo = async (req, res) => {
     const customerInfo = await CustomerInfo.findOne({ userId }).select('-__v');
 
     if (!customerInfo) {
-      return res.status(404).json({ message: 'Customer info not found' });
+      res.status(200).json({ message: 'Customer info not found' });
     }
 
     res.json(customerInfo);
