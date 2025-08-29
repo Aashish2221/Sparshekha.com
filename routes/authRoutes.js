@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { register, login } = require('../controllers/authController');
 const authenticateToken = require('../middleware/authMiddleware');
-const { getCustomerInfo, updateCustomerInfo } = require('../controllers/CustomerInfoController'); // Fixed path
+const { getCustomerInfo, updateCustomerInfo } = require('../controllers/CustomerInfoController');
+const { getShippingInfo, updateShippingInfo } = require('../controllers/shippingController');
 
 router.post('/register', register);
 router.post('/login', login);
@@ -11,5 +12,7 @@ router.get('/protected', authenticateToken, (req, res) => {
 });
 router.get('/customer-info', authenticateToken, getCustomerInfo);
 router.put('/customer-info', authenticateToken, updateCustomerInfo);
+router.get('/shipping-info', authenticateToken, getShippingInfo);
+router.put('/shipping-info', authenticateToken, updateShippingInfo);
 
 module.exports = router;
