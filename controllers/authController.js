@@ -35,7 +35,7 @@ const register = async (req, res) => {
 
     // Generate JWT token with 7-day expiration
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    user.tokens.push(token); // Add token to tokens array
+    user.tokens = [token]; // Replace tokens array with the latest token
     await user.save();
 
     // Return response with token and user details
@@ -48,7 +48,8 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(email, password);
+    
     if (!email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
@@ -65,7 +66,7 @@ const login = async (req, res) => {
 
     // Generate new JWT token with 7-day expiration
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    user.tokens.push(token); // Add new token to tokens array
+    user.tokens = [token]; // Replace tokens array with the latest token
     await user.save();
 
     // Return response with the latest token
