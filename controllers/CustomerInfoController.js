@@ -7,7 +7,7 @@ const getCustomerInfo = async (req, res) => {
     const customerInfo = await CustomerInfo.findOne({ userId }).select('-__v');
 
     if (!customerInfo) {
-      res.status(200).json({ message: 'Customer info not found' });
+      return res.status(404).json({ message: 'Customer info not found' });
     }
 
     res.json(customerInfo);
@@ -20,29 +20,36 @@ const updateCustomerInfo = async (req, res) => {
   try {
     const userId = req.user.userId;
     console.log('Updating customer info for userId:', userId); // Debug log
-    console.log('Received updates:', req.body); // Log the request body
+    console.log('Received request body:', req.body); // Log the full request body
 
     let customerInfo = await CustomerInfo.findOne({ userId });
+    const updates = { ...req.body, updatedAt: Date.now() };
+
+    // Handle emailId to prevent null or empty values
+    if ('emailId' in updates && !updates.emailId.trim()) {
+      delete updates.emailId; // Remove emailId if empty or null
+    }
+
     if (!customerInfo) {
-      customerInfo = new CustomerInfo({ userId, ...req.body });
-      console.log('Creating new customer info:', customerInfo);
+      customerInfo = new CustomerInfo({ userId, ...updates });
+      console.log('Creating new customer info document:', customerInfo.toObject());
     } else {
       customerInfo = await CustomerInfo.findOneAndUpdate(
         { userId },
-        { ...req.body, updatedAt: Date.now() },
+        updates,
         { new: true, runValidators: true, select: '-__v' }
       );
-      console.log('Updated customer info:', customerInfo);
+      console.log('Updated customer info document:', customerInfo.toObject());
     }
 
     if (!customerInfo) {
       return res.status(500).json({ message: 'Failed to save customer info' });
     }
 
-    await customerInfo.save(); // Ensure save is called for new documents
+    await customerInfo.save(); // Ensure save for new documents
     res.json(customerInfo);
   } catch (error) {
-    console.error('Error updating customer info:', error); // Debug error
+    console.error('Error updating customer info:', error.message, error.stack); // Detailed error log
     errorHandler(res, error);
   }
 };
