@@ -7,7 +7,7 @@ const getCustomerInfo = async (req, res) => {
     const customerInfo = await CustomerInfo.findOne({ userId }).select('-__v');
 
     if (!customerInfo) {
-      return res.status(404).json({ message: 'Customer info not found' });
+      return res.status(200).json({ message: 'Customer info not found' });
     }
 
     res.json(customerInfo);
@@ -19,8 +19,6 @@ const getCustomerInfo = async (req, res) => {
 const updateCustomerInfo = async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log('Updating customer info for userId:', userId); // Debug log
-    console.log('Received request body:', req.body); // Log the full request body
 
     let customerInfo = await CustomerInfo.findOne({ userId });
     const updates = { ...req.body, updatedAt: Date.now() };
