@@ -9,51 +9,82 @@ const Razorpay = require('razorpay');
      });
 
      const placeOrder = async (req, res) => {
-      console.log(123);
-      
-       try {
-         const userId = req.user.userId;
-         const { items, shippingInfo, totalAmount } = req.body;
+  try {
+    const userId = req.user.userId;
+    const { items, shippingInfo, totalAmount } = req.body;
 
-         if (!items || !shippingInfo || !totalAmount) {
-           return res.status(400).json({ message: 'Items, shipping info, and total amount are required' });
-         }
+    // Validate inputs
+    if (!items || !shippingInfo || !totalAmount) {
+      return res.status(400).json({ message: 'Items, shipping info, and total amount are required' });
+    }
 
-         const options = {
-           amount: totalAmount * 100, // Razorpay expects amount in paise
-           currency: 'INR',
-           receipt: `order_rcpt_${userId}_${Date.now()}`,
-         };
+    // Validate totalAmount
+    if (typeof totalAmount !== 'number' || isNaN(totalAmount) || totalAmount <= 0) {
+      return res.status(400).json({ message: 'Total amount must be a valid positive number' });
+    }
 
-         const razorpayOrder = await razorpay.orders.create(options);
+    // Validate items
+    for (const item of items) {
+      if (!Number.isInteger(item.productId) || item.productId <= 0) {
+        return res.status(400).json({ message: `Invalid productId: ${item.productId}` });
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+        return res.status(400).json({ message: `Invalid quantity for productId: ${item.productId}` });
+      }
+      if (typeof item.price !== 'number' || isNaN(item.price) || item.price <= 0) {
+        return res.status(400).json({ message: `Invalid price for productId: ${item.productId}` });
+      }
+    }
 
-         const order = new Order({
-           userId,
-           items,
-           shippingInfo,
-           totalAmount,
-           razorpayOrderId: razorpayOrder.id,
-         });
+    // Sanitize and convert to paise
+    const sanitizedAmount = Math.round(totalAmount * 100) / 100; // Ensure 39.98
+    const amountInPaise = Math.floor(sanitizedAmount * 100); // Ensure 3998
 
-         await order.save();
+    // Generate a shorter receipt (max 40 characters)
+    const timestamp = Date.now().toString().slice(-8);
+    const shortUserId = userId.slice(-6);
+    const receipt = `ord_${shortUserId}_${timestamp}`;
 
-         res.json({
-           success: true,
-           message: 'Order created. Proceed with payment.',
-           orderId: order._id,
-           razorpayOrder,
-         });
-       } catch (error) {
-         errorHandler(res, error);
-       }
-     };
+    // Log for debugging
+    console.log('Generated receipt:', receipt, 'Length:', receipt.length);
+    console.log('Received payload:', req.body);
+    console.log('totalAmount:', totalAmount, 'sanitizedAmount:', sanitizedAmount, 'amountInPaise:', amountInPaise);
+
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: receipt,
+    };
+
+    const razorpayOrder = await razorpay.orders.create(options);
+
+    const order = new Order({
+      userId,
+      items,
+      shippingInfo,
+      totalAmount: sanitizedAmount,
+      razorpayOrderId: razorpayOrder.id,
+    });
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: 'Order created. Proceed with payment.',
+      orderId: order._id,
+      razorpayOrder,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
 
      const verifyPayment = async (req, res) => {
        try {
          const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
          const sign = razorpay_order_id + '|' + razorpay_payment_id;
-         const expectedSign = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+         const expectedSign = crypto.createHmac('sha256', IyW6B2j2bhg33Ej9M9TATGpf)
            .update(sign)
            .digest('hex');
 
