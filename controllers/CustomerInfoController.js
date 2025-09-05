@@ -30,14 +30,12 @@ const updateCustomerInfo = async (req, res) => {
 
     if (!customerInfo) {
       customerInfo = new CustomerInfo({ userId, ...updates });
-      console.log('Creating new customer info document:', customerInfo.toObject());
     } else {
       customerInfo = await CustomerInfo.findOneAndUpdate(
         { userId },
         updates,
         { new: true, runValidators: true, select: '-__v' }
       );
-      console.log('Updated customer info document:', customerInfo.toObject());
     }
 
     if (!customerInfo) {
@@ -47,7 +45,6 @@ const updateCustomerInfo = async (req, res) => {
     await customerInfo.save(); // Ensure save for new documents
     res.json(customerInfo);
   } catch (error) {
-    console.error('Error updating customer info:', error.message, error.stack); // Detailed error log
     errorHandler(res, error);
   }
 };

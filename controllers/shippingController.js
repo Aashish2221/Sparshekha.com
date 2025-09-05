@@ -19,20 +19,15 @@ const getShippingInfo = async (req, res) => {
 const updateShippingInfo = async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log('Updating shipping info for userId:', userId); // Debug log
-    console.log('Received updates:', req.body); // Log the request body
-
     let shippingInfo = await ShippingInfo.findOne({ userId });
     if (!shippingInfo) {
       shippingInfo = new ShippingInfo({ userId, ...req.body });
-      console.log('Creating new shipping info:', shippingInfo);
     } else {
       shippingInfo = await ShippingInfo.findOneAndUpdate(
         { userId },
         { ...req.body, updatedAt: Date.now() },
         { new: true, runValidators: true, select: '-__v' }
       );
-      console.log('Updated shipping info:', shippingInfo);
     }
 
     if (!shippingInfo) {
@@ -42,7 +37,6 @@ const updateShippingInfo = async (req, res) => {
     await shippingInfo.save(); // Ensure save is called for new documents
     res.json(shippingInfo);
   } catch (error) {
-    console.error('Error updating shipping info:', error); // Debug error
     errorHandler(res, error);
   }
 };

@@ -45,11 +45,6 @@ const Razorpay = require('razorpay');
     const shortUserId = userId.slice(-6);
     const receipt = `ord_${shortUserId}_${timestamp}`;
 
-    // Log for debugging
-    console.log('Generated receipt:', receipt, 'Length:', receipt.length);
-    console.log('Received payload:', req.body);
-    console.log('totalAmount:', totalAmount, 'sanitizedAmount:', sanitizedAmount, 'amountInPaise:', amountInPaise);
-
     const options = {
       amount: amountInPaise,
       currency: 'INR',
@@ -79,32 +74,46 @@ const Razorpay = require('razorpay');
   }
 };
 
-     const verifyPayment = async (req, res) => {
-       try {
-         const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+const verifyPayment = async (req, res) => {
+  try {
+    const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
 
-         const sign = razorpay_order_id + '|' + razorpay_payment_id;
-         const expectedSign = crypto.createHmac('sha256', IyW6B2j2bhg33Ej9M9TATGpf)
-           .update(sign)
-           .digest('hex');
+    // Check for authentication (assuming middleware handles token)
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: 'Access token required' });
+    }
 
-         if (expectedSign === razorpay_signature) {
-           const order = await Order.findById(orderId);
-           if (!order) {
-             return res.status(404).json({ message: 'Order not found' });
-           }
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
 
-           order.status = 'paid';
-           order.paymentId = razorpay_payment_id;
-           await order.save();
+    if (!orderId || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
+      return res.status(400).json({ message: 'Missing required payment verification data' });
+    }
 
-           res.json({ success: true, message: 'Payment verified successfully' });
-         } else {
-           res.status(400).json({ message: 'Invalid payment signature' });
-         }
-       } catch (error) {
-         errorHandler(res, error);
-       }
-     };
+    // Compute signature using environment variable
+    const sign = razorpay_order_id + '|' + razorpay_payment_id;
+    const expectedSign = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(sign)
+      .digest('hex');
 
+    if (expectedSign === razorpay_signature) {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
+
+      order.status = 'paid';
+      order.paymentId = razorpay_payment_id;
+      await order.save();
+
+      res.json({ success: true, message: 'Payment verified successfully' });
+    } else {
+      res.status(400).json({ message: 'Invalid payment signature' });
+    }
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
      module.exports = { placeOrder, verifyPayment };
