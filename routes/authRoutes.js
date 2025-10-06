@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const { register, login} = require('../controllers/authController');
 const authenticateToken = require('../middleware/authMiddleware');
 const { getCustomerInfo, updateCustomerInfo } = require('../controllers/CustomerInfoController');
 const { getShippingInfo, updateShippingInfo } = require('../controllers/shippingController');
 const { placeOrder, verifyPayment } = require('../controllers/orderController');
+const { notifyUsers } = require('../controllers/notifyUsers');
 
 router.post('/register', register);
 router.post('/login', login);
@@ -17,5 +18,7 @@ router.get('/shipping-info', authenticateToken, getShippingInfo);
 router.put('/shipping-info', authenticateToken, updateShippingInfo);
 router.post('/orders/place', authenticateToken, placeOrder);
 router.post('/orders/verify', authenticateToken, verifyPayment);
+router.post('/notify-users', notifyUsers);
+
 
 module.exports = router;
