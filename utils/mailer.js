@@ -5,11 +5,10 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: 'patilaashish2221@gmail.com',
+    pass: 'eeou onla egzx anal',
   },
 });
-console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS)
 
 async function sendMail(to, subject, text) {
   // Validate email addresses
@@ -17,7 +16,7 @@ async function sendMail(to, subject, text) {
     throw new Error('Invalid email address provided');
   }
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: 'patilaashish2221@gmail.com',
     to: to.join(','),
     subject,
     text,

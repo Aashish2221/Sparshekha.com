@@ -1,12 +1,10 @@
 const { sendMail } = require('../utils/mailer');
 
-async function notifyUsers(req, res) {
+async function notifyUsers({ recipients, customerName, orderId, items, totalAmount }) {
   try {
-    const { recipients, customerName, orderId, items, totalAmount } = req.body;
-
     // Validate required fields
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0 || !customerName || !orderId || !items || !totalAmount) {
-      return res.status(400).json({ error: 'Missing or invalid required fields' });
+      return false;
     }
 
     // Build HTML email template
@@ -50,7 +48,7 @@ async function notifyUsers(req, res) {
       </html>
     `;
 
-    // Build plain text fallback (optional, for email clients that don't render HTML)
+    // Build plain text fallback
     const text = `
       Dear ${customerName},
 
@@ -69,11 +67,11 @@ async function notifyUsers(req, res) {
     `;
 
     // Send email with HTML
-    const result = await sendMail(recipients, `Order Confirmation - #${orderId}`, text, html);
-    res.status(200).json({ message: 'Order confirmation email sent successfully!', info: result });
+    await sendMail(recipients, `Order Confirmation - #${orderId}`, text, html);
+    return true;
   } catch (error) {
     console.error('Email sending error:', error);
-    res.status(500).json({ error: 'Failed to send order confirmation email' });
+    return false;
   }
 }
 

@@ -18,7 +18,5 @@ router.get('/shipping-info', authenticateToken, getShippingInfo);
 router.put('/shipping-info', authenticateToken, updateShippingInfo);
 router.post('/orders/place', authenticateToken, placeOrder);
 router.post('/orders/verify', authenticateToken, verifyPayment);
-router.post('/notify-users', notifyUsers);
-
 
 module.exports = router;

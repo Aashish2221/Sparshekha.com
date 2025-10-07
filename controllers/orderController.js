@@ -2,6 +2,7 @@ const Razorpay = require('razorpay');
      const crypto = require('crypto');
      const Order = require('../models/Order');
      const { errorHandler } = require('../utils/errorHandler');
+      const { notifyUsers } = require('./notifyUsers');
 
      const razorpay = new Razorpay({
        key_id: "rzp_live_R7riJJKQSytYGE",
@@ -60,9 +61,15 @@ const Razorpay = require('razorpay');
       totalAmount: sanitizedAmount,
       razorpayOrderId: razorpayOrder.id,
     });
-
     await order.save();
-
+    // Call the notification function after saving the order
+    notifyUsers({
+      recipients: [req.user.email], // Use user's email dynamically
+      customerName: req.user.name, // Use user's name dynamically
+      orderId: order._id.toString(),
+      items: items.map(item => item.name || item.productId), // Use item names if available
+      totalAmount: sanitizedAmount
+    });
     res.json({
       success: true,
       message: 'Order created. Proceed with payment.',
