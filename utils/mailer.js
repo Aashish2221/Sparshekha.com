@@ -12,6 +12,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendMail(to, subject, text, html) {
   // Validate email addresses
+  
   if (!to.every(email => validator.validate(email))) {
     throw new Error('Invalid email address provided');
   }
@@ -20,8 +21,8 @@ async function sendMail(to, subject, text, html) {
     to: to.join(','),
     subject,
     text,
-    html,
   };
+  
   return transporter.sendMail(mailOptions);
 }
 

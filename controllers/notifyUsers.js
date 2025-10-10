@@ -1,9 +1,11 @@
 const { sendMail } = require('../utils/mailer');
 
-async function notifyUsers({ recipients, customerName, orderId, items, totalAmount }) {
+async function notifyUsers({ emailID, customerName, orderId, items, totalAmount }) {
   try {
+    console.log(emailID, customerName, orderId, items, totalAmount);
+    
     // Validate required fields
-    if (!recipients || !Array.isArray(recipients) || recipients.length === 0 || !customerName || !orderId || !items || !totalAmount) {
+    if (!emailID || !Array.isArray(emailID) || emailID.length === 0 || !customerName || !orderId || !items || !totalAmount) {
       return false;
     }
 
@@ -67,7 +69,7 @@ async function notifyUsers({ recipients, customerName, orderId, items, totalAmou
     `;
 
     // Send email with HTML
-    await sendMail(recipients, `Order Confirmation - #${orderId}`, text, html);
+    await sendMail(emailID, `Order Confirmation - #${orderId}`, text, html);
     return true;
   } catch (error) {
     console.error('Email sending error:', error);

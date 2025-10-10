@@ -1,15 +1,15 @@
 const Razorpay = require('razorpay');
-     const crypto = require('crypto');
-     const Order = require('../models/Order');
-     const { errorHandler } = require('../utils/errorHandler');
-      const { notifyUsers } = require('./notifyUsers');
+const crypto = require('crypto');
+const Order = require('../models/Order');
+const { errorHandler } = require('../utils/errorHandler');
+const { notifyUsers } = require('./notifyUsers');
 
-     const razorpay = new Razorpay({
-       key_id: "rzp_live_R7riJJKQSytYGE",
-       key_secret: "IyW6B2j2bhg33Ej9M9TATGpf",
-     });
+const razorpay = new Razorpay({
+  key_id: "rzp_live_R7riJJKQSytYGE",
+  key_secret: "IyW6B2j2bhg33Ej9M9TATGpf",
+});
 
-     const placeOrder = async (req, res) => {
+const placeOrder = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { items, shippingInfo, totalAmount } = req.body;
@@ -53,7 +53,7 @@ const Razorpay = require('razorpay');
     };
 
     const razorpayOrder = await razorpay.orders.create(options);
-
+    
     const order = new Order({
       userId,
       items,
@@ -63,12 +63,14 @@ const Razorpay = require('razorpay');
     });
     await order.save();
     // Call the notification function after saving the order
+    console.log(shippingInfo.emailID);
+    
     notifyUsers({
-      recipients: [req.user.email], // Use user's email dynamically
-      customerName: req.user.name, // Use user's name dynamically
+      emailID: [shippingInfo.emailID], // Use user's email dynamically
+      customerName: shippingInfo.name, // Use user's name dynamically
       orderId: order._id.toString(),
       items: items.map(item => item.name || item.productId), // Use item names if available
-      totalAmount: sanitizedAmount
+      totalAmount: totalAmount
     });
     res.json({
       success: true,
@@ -123,4 +125,4 @@ const verifyPayment = async (req, res) => {
     errorHandler(res, error);
   }
 };
-     module.exports = { placeOrder, verifyPayment };
+module.exports = { placeOrder, verifyPayment };

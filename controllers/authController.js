@@ -68,13 +68,6 @@ const login = async (req, res) => {
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     user.tokens = [token]; // Replace tokens array with the latest token
     await user.save();
-    await notifyUsers({
-      recipients: [user.email], // Use user's email dynamically
-      customerName: user.name, // Use user's name dynamically
-      orderId: 'ORD12345', // Replace with actual order ID if available
-      items: ['T-Shirt', 'Jeans'], // Replace with actual items if available
-      totalAmount: 59.99 // Replace with actual amount if available
-    });
     // Return response with the latest token
     res.json({ message: "Login Success Full", user: { id: user._id, name: user.name, email, mobile: user.mobile, token } });
   } catch (error) {
