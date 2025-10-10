@@ -35,7 +35,7 @@ async function notifyUsers({ recipients, customerName, orderId, items, totalAmou
             <div class="order-details">
               <p><strong>Order ID:</strong> ${orderId}</p>
               <p><strong>Items:</strong> ${items.join(', ')}</p>
-              <p><strong>Total Amount:</strong> $${totalAmount}</p>
+              <p><strong>Total Amount:</strong> ${totalAmount}</p>
             </div>
             <p>We will process your order shortly. You will receive a shipping confirmation soon.</p>
             <p>If you have any questions, feel free to contact us at <a href="mailto:patilaashish2221@gmail.com">patilaashish2221@gmail.com</a>.</p>
