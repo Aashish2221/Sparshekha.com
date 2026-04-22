@@ -85,6 +85,7 @@ router.get('/', async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Reviews GET error:', error);
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });

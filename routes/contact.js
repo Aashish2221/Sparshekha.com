@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
+const Contact = require('../models/Contact');
 
 const validateContact = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
@@ -19,16 +20,19 @@ router.post('/', validateContact, async (req, res) => {
   }
 
   try {
-    // In production: send email using nodemailer / SendGrid etc.
     const { name, email, phone, service, eventDate, message } = req.body;
 
-    console.log('New contact inquiry:', { name, email, phone, service, eventDate, message });
+    const contact = new Contact({ name, email, phone, service, eventDate, message });
+    await contact.save();
+
+    console.log('New contact inquiry saved:', contact._id);
 
     res.status(200).json({
       success: true,
       message: "Thank you for reaching out! I'll get back to you within 24 hours.",
     });
   } catch (error) {
+    console.error('Contact POST error:', error);
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 });
