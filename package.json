@@ -7,7 +7,12 @@
     "start": "node --dns-result-order=ipv4first server.js",
     "dev": "nodemon --exec \"node --dns-result-order=ipv4first\" server.js"
   },
-  "keywords": ["makeup", "artist", "portfolio", "api"],
+  "keywords": [
+    "makeup",
+    "artist",
+    "portfolio",
+    "api"
+  ],
   "author": "Poonam",
   "license": "ISC",
   "type": "commonjs",
@@ -15,6 +20,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "express-validator": "^7.3.2",
     "helmet": "^8.1.0",
     "mongoose": "^9.5.0",

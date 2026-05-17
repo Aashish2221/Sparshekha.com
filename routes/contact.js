@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const Contact = require('../models/Contact');
+const { contactLimiter } = require('../middleware/rateLimiter');
 
 const validateContact = [
   body('name').trim().notEmpty().withMessage('Name is required').isLength({ max: 100 }),
@@ -13,7 +14,7 @@ const validateContact = [
 ];
 
 // POST /api/contact - submit contact form
-router.post('/', validateContact, async (req, res) => {
+router.post('/', contactLimiter, validateContact, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
@@ -27,13 +28,13 @@ router.post('/', validateContact, async (req, res) => {
 
     console.log('New contact inquiry saved:', contact._id);
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: "Thank you for reaching out! I'll get back to you within 24 hours.",
     });
   } catch (error) {
     console.error('Contact POST error:', error);
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult, param, query } = require('express-validator');
 const Review = require('../models/Review');
+const { adminAuth } = require('../middleware/auth');
+const { reviewLimiter } = require('../middleware/rateLimiter');
 
 // Validation middleware
 const validateReview = [
@@ -86,7 +88,7 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Reviews GET error:', error);
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
@@ -100,12 +102,12 @@ router.get('/featured', async (req, res) => {
 
     res.json({ success: true, data: reviews });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // POST /api/reviews - create a new review
-router.post('/', validateReview, async (req, res) => {
+router.post('/', reviewLimiter, validateReview, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
@@ -123,12 +125,12 @@ router.post('/', validateReview, async (req, res) => {
       data: { id: review._id, name: review.name, rating: review.rating },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // PATCH /api/reviews/:id/approve - approve a review (admin)
-router.patch('/:id/approve', async (req, res) => {
+router.patch('/:id/approve', adminAuth, async (req, res) => {
   try {
     const review = await Review.findByIdAndUpdate(
       req.params.id,
@@ -138,12 +140,12 @@ router.patch('/:id/approve', async (req, res) => {
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
     res.json({ success: true, data: review });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // PATCH /api/reviews/:id/feature - feature/unfeature a review (admin)
-router.patch('/:id/feature', async (req, res) => {
+router.patch('/:id/feature', adminAuth, async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
@@ -151,18 +153,18 @@ router.patch('/:id/feature', async (req, res) => {
     await review.save();
     res.json({ success: true, data: review });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // DELETE /api/reviews/:id - delete a review (admin)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     const review = await Review.findByIdAndDelete(req.params.id);
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
     res.json({ success: true, message: 'Review deleted successfully' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
