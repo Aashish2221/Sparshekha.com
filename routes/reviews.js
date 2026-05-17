@@ -92,6 +92,34 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/reviews/pending - get all unapproved reviews (admin)
+router.get('/pending', adminAuth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      Review.find({ isApproved: false }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Review.countDocuments({ isApproved: false }),
+    ]);
+
+    res.json({
+      success: true,
+      data: reviews,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalPending: total,
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /api/reviews/featured - get featured reviews
 router.get('/featured', async (req, res) => {
   try {
@@ -135,6 +163,21 @@ router.patch('/:id/approve', adminAuth, async (req, res) => {
     const review = await Review.findByIdAndUpdate(
       req.params.id,
       { isApproved: true },
+      { new: true }
+    );
+    if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
+    res.json({ success: true, data: review });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// PATCH /api/reviews/:id/reject - reject (unapprove) a review (admin)
+router.patch('/:id/reject', adminAuth, async (req, res) => {
+  try {
+    const review = await Review.findByIdAndUpdate(
+      req.params.id,
+      { isApproved: false },
       { new: true }
     );
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
